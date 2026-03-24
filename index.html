@@ -1,243 +1,867 @@
-# 📊 NOVO CARD: Líquido Total (Realizado + Agendado)
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Victor Afonso Nutricionista</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#f5f2ee; --surface:#fff; --surface2:#f0ece6; --border:#e2ddd6;
+  --green:#2d4a2d; --green-mid:#3d6b3d; --green-lt:#5a8f5a;
+  --green-pale:#e8f0e8; --green-xlt:#f0f5f0;
+  --gold:#b8973a; --gold-pale:#f7f0de; --gold-xlt:#fdf8ed;
+  --text:#1a2a1a; --text-mid:#4a5a4a; --text-muted:#8a9a8a;
+  --red:#c0392b; --red-pale:#fdf0ee;
+  --blue:#2563eb; --blue-pale:#eff6ff;
+  --purple:#7c3aed; --purple-pale:#f5f3ff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
 
-## ✨ O Que Foi Adicionado
+/* ── HEADER ── */
+header{background:var(--green);padding:0 36px;display:flex;align-items:center;justify-content:space-between;height:68px;box-shadow:0 2px 16px rgba(45,74,45,.18);position:sticky;top:0;z-index:200}
+.logo-area{display:flex;align-items:center;gap:12px}
+.logo-icon{width:38px;height:38px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px}
+.logo-text{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#fff;line-height:1.2}
+.logo-text span{display:block;font-family:'Inter',sans-serif;font-size:.6rem;font-weight:400;color:rgba(255,255,255,.5);letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+.live-badge{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:5px 13px;font-size:.63rem;color:rgba(255,255,255,.7);letter-spacing:.1em;text-transform:uppercase}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#7cd67c;box-shadow:0 0 6px #7cd67c;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-Um **novo card principal** que mostra o **Líquido Total do mês**, somando:
-- ✅ Líquido realizado (consultas concluídas)
-- 📅 Líquido agendado (consultas pendentes)
+/* ── NAV TABS (main) ── */
+.nav-tabs{display:flex;background:var(--green);border-bottom:1px solid rgba(255,255,255,.1);padding:0 36px}
+.nav-tab{padding:11px 20px;font-size:.72rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.5);border:none;background:transparent;cursor:pointer;border-bottom:3px solid transparent;transition:all .18s}
+.nav-tab:hover{color:rgba(255,255,255,.85)}
+.nav-tab.active{color:#fff;border-bottom-color:var(--gold);font-weight:600}
 
----
+/* ── WRAPPER ── */
+.wrapper{max-width:1300px;margin:0 auto;padding:28px 28px 60px}
 
-## 🎨 Layout Atualizado
+/* ── TOP BAR ── */
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.top-title{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;color:var(--green)}
+.month-tabs{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;flex-wrap:wrap}
+.month-tab{padding:5px 13px;font-size:.68rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;background:transparent;color:var(--text-muted);border:none;border-radius:7px;cursor:pointer;transition:all .18s}
+.month-tab:hover{color:var(--green);background:var(--green-pale)}
+.month-tab.active{background:var(--green);color:#fff;font-weight:600}
 
-### Antes (5 cards)
-```
-┌────────────────────────────────────────────────────┐
-│  Líquido   │  Previsto  │  Bruta  │  Repasses  │  Ticket  │
-│ Realizado  │   (Velho)  │         │            │   Médio  │
-└────────────────────────────────────────────────────┘
-```
+/* ── CARD BASE ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 18px;position:relative;overflow:hidden;transition:box-shadow .2s,transform .2s}
+.card:hover{box-shadow:0 6px 24px rgba(45,74,45,.1);transform:translateY(-2px)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;background:var(--ct,transparent)}
+.card.ct-green{--ct:var(--green)}.card.ct-gold{--ct:var(--gold)}.card.ct-red{--ct:var(--red)}.card.ct-blue{--ct:var(--blue)}.card.ct-purple{--ct:var(--purple)}
+.card-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:12px}
+.ci-green{background:var(--green-pale)}.ci-red{background:var(--red-pale)}.ci-gold{background:var(--gold-pale)}.ci-gray{background:var(--surface2)}.ci-blue{background:var(--blue-pale)}.ci-purple{background:var(--purple-pale)}
+.card-label{font-size:.6rem;font-weight:600;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.card-value{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;color:var(--text);line-height:1;letter-spacing:-.01em}
+.cv-green{color:var(--green)}.cv-gold{color:var(--gold)}.cv-red{color:var(--red)}.cv-blue{color:var(--blue)}.cv-purple{color:var(--purple)}
+.card-sub{margin-top:7px;font-size:.63rem;color:var(--text-muted)}
+.card-sub b{color:var(--text-mid)}
 
-### Depois (6 cards) - NOVO!
-```
-┌──────────────────────────────────────────────────────────────────┐
-│  Líquido  │  Realizado  │  Agendado  │  Bruta  │  Repasses  │  Ticket  │
-│   Total   │   (✅)      │   (📅)     │         │            │   Médio  │
-└──────────────────────────────────────────────────────────────────┘
-```
+/* progress */
+.prog-wrap{margin-top:10px}
+.prog-label{display:flex;justify-content:space-between;font-size:.58rem;color:var(--text-muted);margin-bottom:4px}
+.prog-bar{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;background:var(--green);transition:width .8s ease}
 
----
+/* previsto pill */
+.pill{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:3px 8px;border-radius:20px;background:var(--gold-xlt);border:1px solid var(--gold);font-size:.58rem;font-weight:600;color:var(--gold);letter-spacing:.06em;text-transform:uppercase}
 
-## 💰 O Que Cada Card Mostra
+/* ── GRIDS ── */
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:18px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.g-main{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:18px}
+.g-three{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px;margin-bottom:18px}
 
-### 1️⃣ **Líquido Total** (NOVO - Verde Escuro)
-```
-┌──────────────────────────┐
-│ 💰 Líquido Total        │
-│                         │
-│  R$ 7.840,00            │ ← Realizado + Agendado
-│                         │
-│ Realizado + Agendado    │
-└──────────────────────────┘
-```
-- **Valor:** Soma do líquido realizado + agendado
-- **Cor:** Verde escuro (principal)
-- **Icon:** 💰 Moeda
+/* ── CONSULTÓRIO CARDS ── */
+.consultorio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.cons-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;overflow:hidden;position:relative}
+.cons-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.cons-maxfit::before{background:var(--green)}
+.cons-copa::before{background:var(--gold)}
+.cons-online::before{background:var(--blue)}
+.cons-outro::before{background:var(--text-muted)}
+.cons-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.cons-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cons-maxfit .cons-dot{background:var(--green)}
+.cons-copa .cons-dot{background:var(--gold)}
+.cons-online .cons-dot{background:var(--blue)}
+.cons-outro .cons-dot{background:var(--text-muted)}
+.cons-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;color:var(--text)}
+.cons-n{margin-left:auto;font-size:.65rem;color:var(--text-muted);background:var(--surface2);padding:2px 8px;border-radius:10px;border:1px solid var(--border)}
+.cons-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--surface2);font-size:.72rem}
+.cons-row:last-child{border-bottom:none}
+.cons-row-label{color:var(--text-muted)}
+.cons-row-val{font-weight:600;color:var(--text-mid)}
+.cons-row-val.green{color:var(--green)}
+.cons-row-val.red{color:var(--red)}
+.cons-row-val.gold{color:var(--gold);font-weight:600}
+.cons-row-val.gold{color:var(--gold)}
+.cons-aluguel{font-size:.62rem;color:var(--text-muted);margin-top:4px;display:flex;justify-content:space-between}
 
-### 2️⃣ **Realizado** (Novo posicionamento - Verde)
-```
-┌──────────────────────────┐
-│ ✅ Realizado            │
-│                         │
-│  R$ 4.830,00            │
-│                         │
-│ 15 consultas concluídas │
-└──────────────────────────┘
-```
-- **Valor:** Líquido apenas das consultas realizadas
-- **Subtítulo:** Contagem de consultas concluídas
-- **Cor:** Verde
+/* ── SECTION HEADER ── */
+.section-head{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+.section-head h3{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;color:var(--green)}
+.section-head span{font-size:.6rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase}
 
-### 3️⃣ **Agendado** (Novo posicionamento - Dourado)
-```
-┌──────────────────────────┐
-│ 📈 Agendado             │
-│                         │
-│  R$ 3.010,00            │ ← (Bruto agendado - Repasse estimado)
-│                         │
-│ 8 consultas pendentes    │
-└──────────────────────────┘
-```
-- **Valor:** Líquido estimado das consultas agendadas
-- **Subtítulo:** Contagem de consultas agendadas
-- **Cálculo:** (Bruto agendado - Repasse estimado)
-- **Cor:** Dourado (destaque)
+/* ── CHART CARD ── */
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px}
 
-### 4️⃣ **Receita Bruta** (Mantido)
-- Total de receita bruta (realizado + agendado)
-- Antes dos repasses
+/* ── PRÓXIMAS CONSULTAS ── */
+.next-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px}
+.consulta-item{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--surface2)}
+.consulta-item:last-child{border-bottom:none}
+.consulta-date{min-width:48px;text-align:center;background:var(--green-pale);border-radius:9px;padding:5px 4px}
+.consulta-date .day{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--green);line-height:1}
+.consulta-date .mon{font-size:.5rem;font-weight:600;color:var(--green-lt);letter-spacing:.1em;text-transform:uppercase}
+.consulta-info{flex:1;min-width:0}
+.consulta-nome{font-size:.78rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.consulta-meta{display:flex;align-items:center;gap:7px;margin-top:2px}
+.tag-hora{font-size:.6rem;color:var(--text-muted)}
+.tag-local{display:inline-block;padding:1px 7px;border-radius:4px;font-size:.58rem;font-weight:500;background:var(--surface2);color:var(--text-mid);border:1px solid var(--border)}
+.tag-local.maxfit{background:rgba(45,74,45,.08);color:var(--green);border-color:rgba(45,74,45,.2)}
+.tag-local.copa{background:rgba(184,151,58,.08);color:var(--gold);border-color:rgba(184,151,58,.2)}
+.tag-local.online{background:var(--blue-pale);color:var(--blue);border-color:rgba(37,99,235,.2)}
+.consulta-val{font-family:'Playfair Display',serif;font-size:.85rem;font-weight:700;color:var(--green-mid);white-space:nowrap}
+.empty-state{text-align:center;padding:28px 12px;color:var(--text-muted);font-size:.73rem;line-height:1.7}
 
-### 5️⃣ **Custos / Repasses** (Mantido)
-- Total de repasses
-- Percentual da receita bruta
+/* ── TABLE ── */
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:18px}
+.table-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.table-head h3{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;color:var(--green)}
+.srch{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 13px;font-family:'Inter',sans-serif;font-size:.7rem;color:var(--text);outline:none;width:190px;transition:border-color .2s}
+.srch:focus{border-color:var(--green-lt)}
+.srch::placeholder{color:var(--text-muted)}
+table{width:100%;border-collapse:collapse;font-size:.71rem}
+thead th{text-align:left;padding:0 10px 10px;color:var(--text-muted);font-size:.58rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid #f0ece6;transition:background .12s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--green-xlt)}
+tbody td{padding:9px 10px;color:var(--text-mid)}
+tbody td:first-child{font-weight:500;color:var(--text)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:20px;font-size:.57rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.badge::before{content:'';width:4px;height:4px;border-radius:50%}
+.b-real{background:var(--green-pale);color:var(--green-mid)}.b-real::before{background:var(--green-mid)}
+.b-agnd{background:var(--gold-pale);color:var(--gold)}.b-agnd::before{background:var(--gold)}
+.b-outro{background:var(--surface2);color:var(--text-muted)}.b-outro::before{background:var(--text-muted)}
+.lt{display:inline-block;padding:1px 6px;border-radius:4px;font-size:.58rem;font-weight:500;background:var(--surface2);color:var(--text-mid);border:1px solid var(--border)}
+.vg{color:var(--green);font-weight:600}.vd{color:var(--gold);font-weight:500}
 
-### 6️⃣ **Ticket Médio** (Mantido)
-- Valor médio por consulta realizada
+/* ── ANUAL ── */
+.anual-wrap{display:none}
+.anual-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.anual-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px;overflow-x:auto}
+.anual-table-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--green);margin-bottom:18px}
+.atbl{width:100%;border-collapse:collapse;font-size:.72rem;min-width:700px}
+.atbl thead th{text-align:right;padding:0 10px 10px;color:var(--text-muted);font-size:.59rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap}
+.atbl thead th:first-child{text-align:left}
+.atbl tbody tr{border-bottom:1px solid #f0ece6;transition:background .12s}
+.atbl tbody tr:hover{background:var(--green-xlt)}
+.atbl tbody tr:last-child{border-bottom:none;background:var(--green-pale);font-weight:600}
+.atbl td{padding:9px 10px;text-align:right;color:var(--text-mid);white-space:nowrap}
+.atbl td:first-child{text-align:left;font-weight:500;color:var(--text)}
+.atbl .hi{color:var(--green);font-weight:600}
+.atbl .dim{color:var(--text-muted)}
+.anual-charts{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px}
 
----
+/* ── UTIL ── */
+.loading{display:flex;align-items:center;justify-content:center;gap:12px;padding:60px;color:var(--text-muted);font-size:.75rem;letter-spacing:.08em}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{text-align:center;padding:48px;color:var(--red);font-size:.75rem;line-height:1.9}
+.fade-in{animation:fadeUp .32s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in:nth-child(1){animation-delay:.04s}.fade-in:nth-child(2){animation-delay:.08s}
+.fade-in:nth-child(3){animation-delay:.12s}.fade-in:nth-child(4){animation-delay:.16s}
+.fade-in:nth-child(5){animation-delay:.2s}.fade-in:nth-child(6){animation-delay:.24s}
 
-## 🔧 Como Funciona Tecnicamente
+.divider{height:1px;background:var(--border);margin:20px 0}
 
-### Cálculos Adicionados
+@media(max-width:1100px){.g5{grid-template-columns:repeat(3,1fr)}.g6{grid-template-columns:repeat(3,1fr)}.consultorio-grid{grid-template-columns:repeat(2,1fr)}.g-three{grid-template-columns:1fr 1fr}.anual-cards{grid-template-columns:repeat(2,1fr)}.anual-charts{grid-template-columns:1fr}}
+@media(max-width:720px){.g5{grid-template-columns:repeat(2,1fr)}.g6{grid-template-columns:repeat(2,1fr)}.consultorio-grid{grid-template-columns:1fr}.g-main,.g2,.g3,.g-three{grid-template-columns:1fr}header{padding:0 14px}.wrapper{padding:18px 12px 40px}.nav-tabs{padding:0 14px}.top-bar{flex-direction:column;align-items:flex-start;gap:10px}}
+</style>
+</head>
+<body>
 
-```javascript
-// Dados do realizado
-const real = records.filter(r => r.status.includes('REALIZADO'));
-const totLiq = real.reduce((s,r) => s+r.liquido, 0);  // ✅
+<header>
+  <div class="logo-area">
+    <div class="logo-icon">🥗</div>
+    <div class="logo-text">Victor Afonso <span>Nutricionista · Dashboard</span></div>
+  </div>
+  <div class="live-badge"><div class="live-dot"></div><span id="sync-label">ao vivo</span></div>
+</header>
 
-// NOVO: Dados do agendado
-const agnd = records.filter(r => !r.status.includes('REALIZADO'));
-const totBrutoAgnd = agnd.reduce((s,r) => s+r.pgto, 0);        // Bruto agendado
-const totRepAgnd = agnd.reduce((s,r) => s+r.repasse, 0);       // Repasse agendado
-const totLiqAgnd = totBrutoAgnd - totRepAgnd;                   // Líquido agendado
+<div class="nav-tabs">
+  <button class="nav-tab active" onclick="switchView('mensal',this)">📅 Mensal</button>
+  <button class="nav-tab" onclick="switchView('anual',this)">📊 Resumo Anual</button>
+</div>
 
-// NOVO: Total
-const totLiqGeral = totLiq + totLiqAgnd;  // Realizado + Agendado
-```
+<div class="wrapper">
 
-### Dados Exibidos
+  <!-- ═══ VIEW MENSAL ═══ -->
+  <div id="view-mensal">
+    <div class="top-bar">
+      <div class="top-title">Atendimentos 2026</div>
+      <div class="month-tabs" id="month-tabs"></div>
+    </div>
+    <div id="dash">
+      <div class="loading"><div class="spinner"></div> Carregando dados...</div>
+    </div>
+  </div>
 
-```javascript
-// Card 1: Líquido Total
-${R$(totLiqGeral)}  // Realizado + Agendado
+  <!-- ═══ VIEW ANUAL ═══ -->
+  <div id="view-anual" style="display:none">
+    <div class="top-bar">
+      <div class="top-title">Resumo Anual 2026</div>
+    </div>
+    <div id="anual-dash">
+      <div class="loading"><div class="spinner"></div> Carregando todos os meses...</div>
+    </div>
+  </div>
 
-// Card 2: Realizado
-${R$(totLiq)}       // Apenas realizado
-${real.length}      // Contagem
+</div><!-- /wrapper -->
 
-// Card 3: Agendado
-${R$(totLiqAgnd)}   // Apenas agendado
-${agnd.length}      // Contagem
-```
+<script>
+const SHEET_ID='1s4FeWxu2bPyJy3YKQg-AWuIZPc8qPjbKtgTZQqoiJzw';
+const API_KEY='AIzaSyA5nvVDeY1YSlTY6uukqhBQ-ZGBqKxQRhs';
+const MONTHS=[
+  {l:'Jan',n:'janeiro'},{l:'Fev',n:'fevereiro'},{l:'Mar',n:'março'},
+  {l:'Abr',n:'abril'},{l:'Mai',n:'maio'},{l:'Jun',n:'junho'},
+  {l:'Jul',n:'julho'},{l:'Ago',n:'agosto'},{l:'Set',n:'setembro'},
+  {l:'Out',n:'outubro'},{l:'Nov',n:'novembro'},{l:'Dez',n:'dezembro'},
+];
+const LOCAIS_KNOWN=['maxfit','max','copa','online'];
 
----
+let cache={}, charts={}, sheetMeta=[], useTabs=[], anualLoaded=false;
 
-## 📱 Responsividade
+// ── helpers ──────────────────────────────────────────────
+const R$=v=>'R$\u00a0'+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const num=s=>parseFloat((s||'0').replace(/[^\d.,]/g,'').replace(',','.'))||0;
+function normalLocal(s){
+  const l=(s||'').toLowerCase().trim();
+  if(l.includes('maxfit')||l.includes('max fit')||l==='max') return 'Maxfit';
+  if(l.includes('copa')) return 'Copa';
+  if(l.includes('online')) return 'Online';
+  return s||'Outro';
+}
+function localClass(s){
+  const n=normalLocal(s);
+  if(n==='Maxfit') return 'maxfit';
+  if(n==='Copa') return 'copa';
+  if(n==='Online') return 'online';
+  return '';
+}
+function consClass(n){
+  if(n==='Maxfit') return 'cons-maxfit';
+  if(n==='Copa') return 'cons-copa';
+  if(n==='Online') return 'cons-online';
+  return 'cons-outro';
+}
+function parseDate(str){
+  if(!str) return null;
+  const s=str.trim();
+  const m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if(!m) return null;
+  let a=+m[1], b=+m[2], ano=+m[3];
+  if(String(m[3]).length===2) ano=2000+ano;
+  // Se o primeiro numero > 12, certamente é dia (DD/MM)
+  // Se o segundo numero > 12, certamente é mês no formato (MM/DD) americano — inverte
+  // Caso ambos <= 12, assume formato brasileiro DD/MM
+  let dia, mes;
+  if(a > 12) { dia=a; mes=b; }        // ex: 15/3/2026 -> dia=15, mes=3
+  else if(b > 12) { dia=b; mes=a; }   // ex: 3/15/2026 -> dia=15, mes=3 (americano)
+  else { dia=a; mes=b; }              // ambiguos: assume DD/MM brasileiro
+  return new Date(ano, mes-1, dia);
+}
+function fmtDate(d){
+  if(!d) return{day:'—',mon:'—',year:'',dow:''};
+  const M=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const DOW=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  return{
+    day:String(d.getDate()).padStart(2,'0'),
+    mon:M[d.getMonth()],
+    year:d.getFullYear(),
+    dow:DOW[d.getDay()],
+  };
+}
+function killCharts(){Object.values(charts).forEach(c=>c.destroy());charts={}}
 
-| Tela | Layout |
-|------|--------|
-| **Desktop (>1100px)** | 6 colunas |
-| **Tablet (768-1100px)** | 3 colunas × 2 linhas |
-| **Mobile (<720px)** | 2 colunas × 3 linhas |
+// ── nav view switch ──────────────────────────────────────
+function switchView(view, btn){
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('view-mensal').style.display = view==='mensal'?'':'none';
+  document.getElementById('view-anual').style.display  = view==='anual'?'':'none';
+  if(view==='anual' && !anualLoaded) loadAnual();
+}
 
----
+// ── fetch ────────────────────────────────────────────────
+async function getSheets(){
+  const r=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?key=${API_KEY}`);
+  return (await r.json()).sheets.map(s=>s.properties);
+}
+async function getRows(title){
+  if(cache[title]) return cache[title];
+  const enc=encodeURIComponent(`${title}!A1:X120`);
+  const r=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${enc}?key=${API_KEY}`);
+  cache[title]=(await r.json()).values||[];
+  return cache[title];
+}
 
-## ✅ Checklist de Verificação
+// ── parse ────────────────────────────────────────────────
+function parseMonth(rows){
+  if(!rows||rows.length<3) return{records:[],previsto:{bruto:0,n:0},byLocal:{}};
+  const records=[];
+  let previsto={bruto:0,n:0};
 
-- [ ] 6 cards aparecem no topo do dashboard
-- [ ] Primeiro card (verde) mostra "Líquido Total"
-- [ ] Valor do Líquido Total = Realizado + Agendado
-- [ ] Cards estão em ordem: Total → Realizado → Agendado → Bruta → Repasses → Ticket
-- [ ] No tablet, cards aparecem em 3 colunas
-- [ ] No mobile, cards aparecem em 2 colunas
-- [ ] Animação fade-in aparece em cascata (1º ao 6º)
+  for(let i=2;i<rows.length;i++){
+    const r=rows[i]; if(!r) continue;
+    // atendimentos
+    if(r[1]&&r[1].trim()){
+      records.push({
+        nome:r[1].trim(), status:(r[3]||'').toUpperCase(),
+        dataStr:r[4]||'', dateObj:parseDate(r[4]),
+        horario:r[5]||'', lugar:normalLocal(r[7]),
+        pgto:num(r[9]), repasse:num(r[10])+num(r[12]),
+        liquido:num(r[13]||r[11]),
+        aluguel:0,
+      });
+    }
+    // previsto lateral
+    if((r[15]||'').toUpperCase()==='PREVISTO'){
+      const b=num(r[17]),n=num(r[19]);
+      if(b>0||n>0) previsto={bruto:b,n:n};
+    }
+    if(r[16]==='receita'||r[16]==='Receita'){
+      const b=num(r[17]),lq=num(r[18]),n=num(r[19]);
+      if(b>0) previsto={bruto:b,liquido:lq,n:n};
+    }
+  }
 
----
+  // calcular aluguel por local (do bloco REALIZADO lateral)
+  // bloco começa na linha 10 (índice 9) aprox: Local | aluguel | bruto | liq | n | repasse
+  const aluguelMap={};
+  for(let i=2;i<rows.length;i++){
+    const r=rows[i]; if(!r) continue;
+    const local=normalLocal(r[15]);
+    const alug=num(r[16]);
+    if(local&&local!=='Outro'&&local!==''&&alug>0&&!aluguelMap[local]) aluguelMap[local]=alug;
+  }
 
-## 🎯 Casos de Uso
+  // agrupar por local
+  const byLocal={};
+  records.filter(r=>r.status.includes('REALIZADO')).forEach(r=>{
+    const l=r.lugar;
+    if(!byLocal[l]) byLocal[l]={n:0,bruto:0,repasse:0,liquido:0,aluguel:aluguelMap[l]||0};
+    byLocal[l].n++;
+    byLocal[l].bruto+=r.pgto;
+    byLocal[l].repasse+=r.repasse;
+    byLocal[l].liquido+=r.liquido;
+  });
 
-### Cenário 1: Mês Tranquilo
-```
-Realizado:   R$ 4.830,00 (15 consultas)
-Agendado:    R$ 2.100,00 (7 consultas futuras)
-────────────────────────────
-Líquido Total: R$ 6.930,00
-```
+  // previsto = soma do pgto dos agendados
+  const agnd=records.filter(r=>!r.status.includes('REALIZADO')&&!r.status.includes('CANCEL')&&r.nome);
+  const previstoCalc=agnd.reduce((s,r)=>s+r.pgto,0);
+  previsto={bruto:previstoCalc, n:agnd.length};
 
-### Cenário 2: Mês Ocupado (Muitos agendados)
-```
-Realizado:   R$ 3.600,00 (12 consultas)
-Agendado:    R$ 4.500,00 (15 consultas futuras)
-────────────────────────────
-Líquido Total: R$ 8.100,00
-```
+  // agrupar agendados por local
+  const byLocalAgnd={};
+  agnd.forEach(r=>{
+    const l=r.lugar||'Outro';
+    if(!byLocalAgnd[l]) byLocalAgnd[l]={n:0,bruto:0};
+    byLocalAgnd[l].n++;
+    byLocalAgnd[l].bruto+=r.pgto;
+  });
 
-### Cenário 3: Sem agendados
-```
-Realizado:   R$ 4.830,00 (15 consultas)
-Agendado:    R$ 0,00 (nenhuma)
-────────────────────────────
-Líquido Total: R$ 4.830,00
-```
+  return{records,previsto,byLocal,byLocalAgnd};
+}
 
----
+// ── RENDER MENSAL ────────────────────────────────────────
+function renderMensal(rows,label){
+  const{records,previsto,byLocal,byLocalAgnd}=parseMonth(rows);
+  const real=records.filter(r=>r.status.includes('REALIZADO'));
+  const agnd=records.filter(r=>!r.status.includes('REALIZADO'));
+  const totBruto=real.reduce((s,r)=>s+r.pgto,0);
+  const totRep=real.reduce((s,r)=>s+r.repasse,0);
+  const totLiq=real.reduce((s,r)=>s+r.liquido,0);
+  
+  // NOVO: Calcular líquido dos agendados (bruto - estimativa de repasse)
+  const totBrutoAgnd=agnd.reduce((s,r)=>s+r.pgto,0);
+  const totRepAgnd=agnd.reduce((s,r)=>s+r.repasse,0);
+  const totLiqAgnd=totBrutoAgnd-totRepAgnd;
+  
+  // NOVO: Total de líquido (realizado + agendado)
+  const totLiqGeral=totLiq+totLiqAgnd;
+  
+  const ticketMedio=real.length?totBruto/real.length:0;
+  const META=4500;
+  const pct=Math.min(100,Math.round(totLiq/META*100));
 
-## 🎨 Cores Usadas
+  const today=new Date(); today.setHours(0,0,0,0);
+  const proximas=records.filter(r=>{
+    if(!r.dateObj||r.status.includes('REALIZADO')||r.status.includes('CANCEL')) return false;
+    const d=new Date(r.dateObj); d.setHours(0,0,0,0);
+    return d>=today;
+  }).sort((a,b)=>a.dateObj-b.dateObj).slice(0,7);
 
-| Card | Cor | Significado |
-|------|-----|-------------|
-| Líquido Total | 🟢 Verde escuro | Principal / Mais importante |
-| Realizado | 🟢 Verde médio | Concretizado |
-| Agendado | 🟡 Dourado | Estimado / Planejado |
-| Bruta | ⚪ Cinza | Secundário |
-| Repasses | 🔴 Vermelho | Custo |
-| Ticket | 🟣 Roxo | Métrica |
+  killCharts();
 
----
+  // consultório cards html
+  const consLocais=Object.keys(byLocal);
+  const consHtml=consLocais.length?consLocais.map(l=>{
+    const d=byLocal[l];
+    return `<div class="cons-card ${consClass(l)}">
+      <div class="cons-header">
+        <div class="cons-dot"></div>
+        <div class="cons-name">${l}</div>
+        <div class="cons-n">${d.n} consultas</div>
+      </div>
+      <div class="cons-row"><span class="cons-row-label">Receita Bruta</span><span class="cons-row-val">${R$(d.bruto)}</span></div>
+      <div class="cons-row"><span class="cons-row-label">Repasse</span><span class="cons-row-val red">−${R$(d.repasse)}</span></div>
+      <div class="cons-row"><span class="cons-row-label">Líquido</span><span class="cons-row-val green">${R$(d.liquido)}</span></div>
+      ${byLocalAgnd[l]?`<div class="cons-row" style="border-top:1px dashed var(--border);margin-top:4px;padding-top:6px"><span class="cons-row-label" style="color:var(--gold)">▸ Previsto (${byLocalAgnd[l].n} consultas)</span><span class="cons-row-val gold">${R$(byLocalAgnd[l].bruto)}</span></div>`:""}
+      <div class="cons-aluguel">
+        <span>Ticket médio: ${R$(d.n?d.bruto/d.n:0)}</span>
+        <span>Margem: ${d.bruto>0?Math.round(d.liquido/d.bruto*100):0}%</span>
+      </div>
+    </div>`;
+  }).join('')
+  :`<div style="grid-column:span 3;text-align:center;padding:30px;color:var(--text-muted);font-size:.75rem">Nenhum atendimento realizado neste mês ainda.</div>`;
 
-## 📊 Cálculos por Consultório
+  document.getElementById('dash').innerHTML=`
+    <!-- CARDS FINANCEIROS -->
+    <div class="g6">
+      <div class="card ct-green fade-in">
+        <div class="card-icon ci-green">💰</div>
+        <div class="card-label">Líquido Total</div>
+        <div class="card-value cv-green">${R$(totLiqGeral)}</div>
+        <div class="card-sub"><b>Realizado + Agendado</b></div>
+      </div>
+      <div class="card ct-green fade-in">
+        <div class="card-icon ci-green">✅</div>
+        <div class="card-label">Realizado</div>
+        <div class="card-value cv-green">${R$(totLiq)}</div>
+        <div class="card-sub"><b>${real.length}</b> consultas concluídas</div>
+      </div>
+      <div class="card ct-gold fade-in">
+        <div class="card-icon ci-gold">📈</div>
+        <div class="card-label">Agendado</div>
+        <div class="card-value cv-gold">${R$(totLiqAgnd)}</div>
+        <div class="card-sub"><b>${agnd.length}</b> consultas pendentes</div>
+      </div>
+      <div class="card fade-in">
+        <div class="card-icon ci-gray">📋</div>
+        <div class="card-label">Receita Bruta</div>
+        <div class="card-value">${R$(totBruto)}</div>
+        <div class="card-sub">antes dos repasses</div>
+      </div>
+      <div class="card ct-red fade-in">
+        <div class="card-icon ci-red">🏢</div>
+        <div class="card-label">Custos / Repasses</div>
+        <div class="card-value cv-red">${R$(totRep)}</div>
+        <div class="card-sub">${totBruto>0?Math.round(totRep/totBruto*100):0}% da receita bruta</div>
+      </div>
+      <div class="card ct-purple fade-in">
+        <div class="card-icon ci-purple">🎯</div>
+        <div class="card-label">Ticket Médio</div>
+        <div class="card-value cv-purple">${R$(ticketMedio)}</div>
+        <div class="card-sub">por consulta realizada</div>
+      </div>
+    </div>
 
-Os cards por consultório (Méier, Copa, Online) também foram atualizados:
+    <!-- CONSULTÓRIOS -->
+    <div class="section-head"><h3>Resultado por Consultório</h3><span>receitas, custos e líquido</span></div>
+    <div class="consultorio-grid">${consHtml}</div>
 
-```
-Cada card de consultório agora mostra:
-├─ Receita Bruta (realizado)
-├─ Repasse
-├─ Líquido
-└─ Previsto (agendado)
-```
+    <div class="divider"></div>
 
----
+    <!-- PRÓXIMAS + CHARTS -->
+    <div class="g-three">
+      <div class="next-card">
+        <div class="section-head"><h3>Próximas Consultas</h3><span>agendadas</span></div>
+        ${proximas.length===0
+          ?'<div class="empty-state">📭<br>Nenhuma consulta agendada encontrada neste mês.</div>'
+          :proximas.map(r=>{
+            const fd=fmtDate(r.dateObj);
+            const lc=localClass(r.lugar);
+            return`<div class="consulta-item">
+              <div class="consulta-date">
+                <div class="day">${fd.day}</div>
+                <div class="mon">${fd.mon} ${fd.year}</div>
+              </div>
+              <div class="consulta-info">
+                <div class="consulta-nome">${r.nome}</div>
+                <div class="consulta-meta">
+                  ${r.horario?`<span class="tag-hora">🕐 ${r.horario}</span>`:''}
+                  <span class="tag-local ${lc}">${r.lugar||'—'}</span>
+                </div>
+              </div>
+              ${r.pgto>0?`<div class="consulta-val">${R$(r.pgto)}</div>`:''}
+            </div>`;
+          }).join('')
+        }
+      </div>
 
-## 🔄 Sincronização
+      <div class="chart-card">
+        <div class="section-head"><h3>Bruto vs Líquido</h3><span>por local</span></div>
+        <canvas id="cBL" height="240"></canvas>
+      </div>
 
-A sincronização automática continua funcionando normalmente:
-- A cada 5 minutos, os valores se atualizam
-- Quando você volta para a página, atualiza imediatamente
-- Os cálculos de Líquido Total são feitos em tempo real
+      <div class="chart-card">
+        <div class="section-head"><h3>Realizado vs Previsto</h3><span>consultas</span></div>
+        <canvas id="cRV" height="240"></canvas>
+      </div>
+    </div>
 
----
+    <!-- TABELA -->
+    <div class="table-card">
+      <div class="table-head">
+        <h3>Todos os Atendimentos — ${label}</h3>
+        <input class="srch" id="srch" type="text" placeholder="🔍  Buscar...">
+      </div>
+      <div id="twrap">${mkTable(records)}</div>
+    </div>
+  `;
 
-## 🐛 Se Algo Não Funcionar
+  // Chart bruto vs liq por local
+  const lls=Object.keys(byLocal);
+  const cBL=document.getElementById('cBL');
+  if(cBL&&lls.length){
+    charts.bl=new Chart(cBL,{
+      type:'bar',
+      data:{
+        labels:lls,
+        datasets:[
+          {label:'Bruto',data:lls.map(l=>byLocal[l].bruto),backgroundColor:'#3d6b3d33',borderColor:'#3d6b3d',borderWidth:2,borderRadius:5},
+          {label:'Líquido',data:lls.map(l=>byLocal[l].liquido),backgroundColor:'#2d4a2d99',borderColor:'#2d4a2d',borderWidth:2,borderRadius:5},
+          {label:'Repasse',data:lls.map(l=>byLocal[l].repasse),backgroundColor:'#c0392b22',borderColor:'#c0392b',borderWidth:2,borderRadius:5},
+        ]
+      },
+      options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#4a5a4a',font:{family:'Inter',size:10},padding:10,usePointStyle:true}}},
+        scales:{x:{grid:{color:'#f0ece6'},ticks:{color:'#8a9a8a',font:{family:'Inter',size:10}}},
+          y:{grid:{color:'#f0ece6'},ticks:{color:'#8a9a8a',font:{family:'Inter',size:10},callback:v=>'R$'+v.toLocaleString('pt-BR')}}}}
+    });
+  }
 
-### Cards não aparecem
-1. Recarregue a página (F5)
-2. Limpe cache (CTRL+F5)
-3. Abra console (F12) e procure por erros
+  // Chart doughnut
+  const cRV=document.getElementById('cRV');
+  if(cRV){
+    const dData=[real.length, Math.max(0,previsto.n)];
+    charts.rv=new Chart(cRV,{
+      type:'doughnut',
+      data:{labels:['Realizado','Agendado'],datasets:[{data:dData,backgroundColor:['#2d4a2d33','#b8973a33'],borderColor:['#2d4a2d','#b8973a'],borderWidth:2}]},
+      options:{responsive:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:'#4a5a4a',font:{family:'Inter',size:11},padding:14,usePointStyle:true}},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed} consultas`}}}}
+    });
+  }
 
-### Valores incorretos
-1. Verifique se a Google Sheets está compartilhada corretamente
-2. Verifique se os dados têm status "REALIZADO" ou agendado
-3. Verifique se as colunas de repasse estão preenchidas
+  // search
+  document.getElementById('srch').addEventListener('input',e=>{
+    const q=e.target.value.toLowerCase();
+    document.getElementById('twrap').innerHTML=mkTable(records.filter(r=>r.nome.toLowerCase().includes(q)));
+  });
 
-### Responsividade quebrada
-1. Redimensione a janela do navegador
-2. Teste em diferentes tamanhos (320px, 768px, 1200px)
+  document.getElementById('sync-label').textContent='atualizado agora';
+}
 
----
+function mkTable(records){
+  if(!records.length) return '<div class="loading">Nenhum registro.</div>';
+  return`<table><thead><tr>
+    <th>Paciente</th><th>Data</th><th>Horário</th><th>Local</th><th>Status</th><th>Bruto</th><th>Repasse</th><th>Líquido</th>
+  </tr></thead><tbody>${records.map(r=>{
+    const bc=r.status.includes('REALIZADO')?'b-real':(!r.status||r.status.includes('AGEND')||r.status.includes('PREVISTO'))?'b-agnd':'b-outro';
+    const bl=r.status.includes('REALIZADO')?'Realizado':(!r.status||r.status.includes('AGEND')||r.status.includes('PREVISTO'))?'Agendado':(r.status||'Agendado');
+    return`<tr>
+      <td>${r.nome}</td><td>${r.dataStr||'—'}</td><td>${r.horario||'—'}</td>
+      <td><span class="lt">${r.lugar||'—'}</span></td>
+      <td><span class="badge ${bc}">${bl}</span></td>
+      <td>${r.pgto>0?R$(r.pgto):'—'}</td>
+      <td>${r.repasse>0?`<span style="color:var(--red)">−${R$(r.repasse)}</span>`:'—'}</td>
+      <td>${r.liquido>0?`<span class="vg">${R$(r.liquido)}</span>`:r.pgto>0?`<span class="vd">aguardando</span>`:'—'}</td>
+    </tr>`;
+  }).join('')}</tbody></table>`;
+}
 
-## 📈 Próximas Melhorias (Opcional)
+// ── RENDER ANUAL ─────────────────────────────────────────
+async function loadAnual(){
+  anualLoaded=true;
+  const el=document.getElementById('anual-dash');
 
-Se quiser adicionar no futuro:
+  // buscar todos os meses disponíveis
+  const monthData=[];
+  for(const tab of useTabs){
+    try{
+      const rows=await getRows(tab.st);
+      const{records,previsto,byLocal,byLocalAgnd}=parseMonth(rows);
+      const real=records.filter(r=>r.status.includes('REALIZADO'));
+      const totBruto=real.reduce((s,r)=>s+r.pgto,0);
+      const totRep=real.reduce((s,r)=>s+r.repasse,0);
+      const totLiq=real.reduce((s,r)=>s+r.liquido,0);
+      const ticket=real.length?totBruto/real.length:0;
+      monthData.push({label:tab.l, n:real.length, bruto:totBruto, rep:totRep, liq:totLiq, ticket, byLocal});
+    }catch(e){
+      monthData.push({label:tab.l,n:0,bruto:0,rep:0,liq:0,ticket:0,byLocal:{}});
+    }
+  }
 
-- [ ] Percentual de realização vs agendado
-- [ ] Gráfico mostrando realizado vs agendado
-- [ ] Previsão de quanto falta para atingir meta
-- [ ] Histórico comparativo (mês passado vs este mês)
-- [ ] Indicador visual se agendado > meta
+  // totais anuais
+  const totN=monthData.reduce((s,m)=>s+m.n,0);
+  const totBruto=monthData.reduce((s,m)=>s+m.bruto,0);
+  const totRep=monthData.reduce((s,m)=>s+m.rep,0);
+  const totLiq=monthData.reduce((s,m)=>s+m.liq,0);
+  const ticketAnual=totN?totBruto/totN:0;
 
----
+  // por local anual
+  const byLocalAnual={};
+  monthData.forEach(m=>{
+    Object.entries(m.byLocal).forEach(([l,d])=>{
+      if(!byLocalAnual[l]) byLocalAnual[l]={n:0,bruto:0,rep:0,liq:0};
+      byLocalAnual[l].n+=d.n; byLocalAnual[l].bruto+=d.bruto;
+      byLocalAnual[l].rep+=d.repasse; byLocalAnual[l].liq+=d.liquido;
+    });
+  });
 
-**Versão:** v1.1 com Líquido Total  
-**Data:** 24 de Março de 2026  
-**Status:** ✅ Pronto para usar
+  killCharts();
+
+  el.innerHTML=`
+    <!-- CARDS ANUAIS -->
+    <div class="anual-cards">
+      <div class="card ct-green fade-in">
+        <div class="card-icon ci-green">💰</div>
+        <div class="card-label">Líquido Total 2026</div>
+        <div class="card-value cv-green">${R$(totLiq)}</div>
+        <div class="card-sub"><b>${totN}</b> consultas realizadas</div>
+      </div>
+      <div class="card fade-in">
+        <div class="card-icon ci-gray">📋</div>
+        <div class="card-label">Receita Bruta 2026</div>
+        <div class="card-value">${R$(totBruto)}</div>
+        <div class="card-sub">total faturado</div>
+      </div>
+      <div class="card ct-red fade-in">
+        <div class="card-icon ci-red">🏢</div>
+        <div class="card-label">Total Repasses</div>
+        <div class="card-value cv-red">${R$(totRep)}</div>
+        <div class="card-sub">${totBruto>0?Math.round(totRep/totBruto*100):0}% da receita bruta</div>
+      </div>
+      <div class="card ct-purple fade-in">
+        <div class="card-icon ci-purple">🎯</div>
+        <div class="card-label">Ticket Médio Anual</div>
+        <div class="card-value cv-purple">${R$(ticketAnual)}</div>
+        <div class="card-sub">por consulta</div>
+      </div>
+    </div>
+
+    <!-- CONSULTÓRIOS ANUAL -->
+    <div class="section-head"><h3>Resultado por Consultório — 2026</h3><span>acumulado do ano</span></div>
+    <div class="consultorio-grid">
+      ${Object.entries(byLocalAnual).map(([l,d])=>`
+        <div class="cons-card ${consClass(l)}">
+          <div class="cons-header"><div class="cons-dot"></div><div class="cons-name">${l}</div><div class="cons-n">${d.n} consultas</div></div>
+          <div class="cons-row"><span class="cons-row-label">Receita Bruta</span><span class="cons-row-val">${R$(d.bruto)}</span></div>
+          <div class="cons-row"><span class="cons-row-label">Repasses</span><span class="cons-row-val red">−${R$(d.rep)}</span></div>
+          <div class="cons-row"><span class="cons-row-label">Líquido</span><span class="cons-row-val green">${R$(d.liq)}</span></div>
+          <div class="cons-aluguel">
+            <span>Ticket médio: ${R$(d.n?d.bruto/d.n:0)}</span>
+            <span>Margem: ${d.bruto>0?Math.round(d.liq/d.bruto*100):0}%</span>
+          </div>
+        </div>`).join('') || '<div style="grid-column:span 3;text-align:center;padding:30px;color:var(--text-muted);font-size:.75rem">Sem dados de consultório ainda.</div>'}
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- CHARTS ANUAL -->
+    <div class="anual-charts">
+      <div class="chart-card">
+        <div class="section-head"><h3>Evolução Mensal</h3><span>bruto · líquido · repasses</span></div>
+        <canvas id="cAnualLine" height="200"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="section-head"><h3>Ticket Médio</h3><span>por mês</span></div>
+        <canvas id="cTicket" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- TABELA MENSAL ANUAL -->
+    <div class="anual-table-wrap">
+      <div class="anual-table-title">Resumo por Mês</div>
+      <table class="atbl">
+        <thead><tr>
+          <th style="text-align:left">Mês</th>
+          <th>Pacientes</th>
+          <th>Receita Bruta</th>
+          <th>Repasses</th>
+          <th>Líquido</th>
+          ${Object.keys(byLocalAnual).map(l=>`<th>${l}</th>`).join('')}
+          <th>Ticket Médio</th>
+        </tr></thead>
+        <tbody>
+          ${monthData.filter(m=>m.n>0||m.bruto>0).map(m=>`
+          <tr>
+            <td>${m.label}</td>
+            <td class="${m.n>0?'hi':'dim'}">${m.n}</td>
+            <td>${m.bruto>0?R$(m.bruto):'—'}</td>
+            <td>${m.rep>0?`<span style="color:var(--red)">−${R$(m.rep)}</span>`:'—'}</td>
+            <td class="${m.liq>0?'hi':'dim'}">${m.liq>0?R$(m.liq):'—'}</td>
+            ${Object.keys(byLocalAnual).map(l=>`<td>${m.byLocal[l]?R$(m.byLocal[l].liquido):'—'}</td>`).join('')}
+            <td>${m.ticket>0?R$(m.ticket):'—'}</td>
+          </tr>`).join('')}
+          <tr>
+            <td><b>TOTAL</b></td>
+            <td class="hi"><b>${totN}</b></td>
+            <td><b>${R$(totBruto)}</b></td>
+            <td><b style="color:var(--red)">−${R$(totRep)}</b></td>
+            <td class="hi"><b>${R$(totLiq)}</b></td>
+            ${Object.keys(byLocalAnual).map(l=>`<td class="hi"><b>${R$(byLocalAnual[l].liq)}</b></td>`).join('')}
+            <td><b>${R$(ticketAnual)}</b></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  // Chart linha evolução
+  const labels=monthData.filter(m=>m.n>0||m.bruto>0).map(m=>m.label);
+  const cLine=document.getElementById('cAnualLine');
+  if(cLine){
+    charts.line=new Chart(cLine,{
+      type:'line',
+      data:{
+        labels,
+        datasets:[
+          {label:'Bruto',data:monthData.filter(m=>m.n>0||m.bruto>0).map(m=>m.bruto),borderColor:'#3d6b3d',backgroundColor:'#3d6b3d11',tension:.35,fill:true,pointRadius:4,pointBackgroundColor:'#3d6b3d'},
+          {label:'Líquido',data:monthData.filter(m=>m.n>0||m.bruto>0).map(m=>m.liq),borderColor:'#2d4a2d',backgroundColor:'#2d4a2d22',tension:.35,fill:true,pointRadius:4,pointBackgroundColor:'#2d4a2d'},
+          {label:'Repasses',data:monthData.filter(m=>m.n>0||m.bruto>0).map(m=>m.rep),borderColor:'#c0392b',backgroundColor:'#c0392b11',tension:.35,fill:false,pointRadius:3,borderDash:[4,3]},
+        ]
+      },
+      options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#4a5a4a',font:{family:'Inter',size:11},padding:14,usePointStyle:true}}},
+        scales:{x:{grid:{color:'#f0ece6'},ticks:{color:'#8a9a8a',font:{family:'Inter',size:11}}},
+          y:{grid:{color:'#f0ece6'},ticks:{color:'#8a9a8a',font:{family:'Inter',size:11},callback:v=>'R$'+v.toLocaleString('pt-BR')}}}}
+    });
+  }
+
+  // Chart ticket médio
+  const mFiltered=monthData.filter(m=>m.n>0||m.bruto>0);
+  const cTick=document.getElementById('cTicket');
+  if(cTick){
+    charts.tick=new Chart(cTick,{
+      type:'bar',
+      data:{
+        labels:mFiltered.map(m=>m.label),
+        datasets:[{label:'Ticket Médio',data:mFiltered.map(m=>m.ticket),backgroundColor:'#7c3aed22',borderColor:'#7c3aed',borderWidth:2,borderRadius:6}]
+      },
+      options:{responsive:true,plugins:{legend:{display:false}},
+        scales:{x:{grid:{color:'#f0ece6'},ticks:{color:'#8a9a8a',font:{family:'Inter',size:11}}},
+          y:{grid:{color:'#f0ece6'},ticks:{color:'#8a9a8a',font:{family:'Inter',size:11},callback:v=>'R$'+v.toLocaleString('pt-BR')}}}}
+    });
+  }
+}
+
+// ── AUTO-SYNC CONTROLLER ──────────────────────────────────
+let syncIntervalId = null;
+let currentActiveTab = null;
+
+function startAutoSync() {
+  // Limpar interval anterior se existir
+  if (syncIntervalId) clearInterval(syncIntervalId);
+  
+  // Sincronizar a cada 5 minutos
+  syncIntervalId = setInterval(async () => {
+    if (currentActiveTab) {
+      console.log('🔄 Sincronizando dashboard...', new Date().toLocaleTimeString('pt-BR'));
+      try {
+        const freshData = await getRows(currentActiveTab.st);
+        renderMensal(freshData, currentActiveTab.l);
+        updateSyncBadge('synced');
+      } catch (e) {
+        console.error('Erro na sincronização:', e);
+        updateSyncBadge('error');
+      }
+    }
+  }, 5 * 60 * 1000); // 5 minutos em ms
+  
+  console.log('⏰ Auto-sync iniciado: a cada 5 minutos');
+}
+
+// Detecção: usuário volta para a janela do navegador
+document.addEventListener('visibilitychange', async () => {
+  if (!document.hidden && currentActiveTab) {
+    console.log('👁️ Página voltou ao foco → Sincronizando agora...');
+    try {
+      const freshData = await getRows(currentActiveTab.st);
+      renderMensal(freshData, currentActiveTab.l);
+      updateSyncBadge('synced');
+    } catch (e) {
+      console.error('Erro ao sincronizar no retorno:', e);
+      updateSyncBadge('error');
+    }
+  }
+});
+
+// Atualizar badge de sincronização
+function updateSyncBadge(status) {
+  const badge = document.querySelector('.live-badge');
+  const dot = document.querySelector('.live-dot');
+  
+  if (status === 'synced') {
+    dot.style.background = '#7cd67c';
+    dot.style.boxShadow = '0 0 6px #7cd67c';
+    badge.title = 'Sincronizado com Google Sheets';
+  } else if (status === 'error') {
+    dot.style.background = '#ff6b6b';
+    dot.style.boxShadow = '0 0 6px #ff6b6b';
+    badge.title = 'Erro ao sincronizar';
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────
+async function init(){
+  try{
+    sheetMeta=await getSheets();
+    const tabs=MONTHS.map(m=>{
+      const match=sheetMeta.find(s=>
+        s.title.toLowerCase().includes(m.l.toLowerCase())||
+        s.title.toLowerCase().includes(m.n)
+      );
+      return match?{...m,st:match.title}:null;
+    }).filter(Boolean);
+
+    useTabs=tabs.length?tabs:[{l:sheetMeta[0].title,n:'',st:sheetMeta[0].title}];
+
+    const tabsEl=document.getElementById('month-tabs');
+    useTabs.forEach((m,i)=>{
+      const btn=document.createElement('button');
+      btn.className='month-tab'+(i===0?' active':'');
+      btn.textContent=m.l;
+      btn.addEventListener('click',async()=>{
+        document.querySelectorAll('.month-tab').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('dash').innerHTML='<div class="loading"><div class="spinner"></div> Carregando...</div>';
+        currentActiveTab = m;
+        renderMensal(await getRows(m.st),m.l);
+      });
+      tabsEl.appendChild(btn);
+    });
+
+    // Carregar dados iniciais
+    currentActiveTab = useTabs[0];
+    renderMensal(await getRows(useTabs[0].st),useTabs[0].l);
+    
+    // Iniciar sincronização automática
+    startAutoSync();
+    
+    console.log('✅ Dashboard carregado com sincronização automática ativa');
+  }catch(e){
+    console.error(e);
+    document.getElementById('dash').innerHTML=`<div class="err">Não foi possível acessar a planilha.<br><br>Verifique se o compartilhamento está em<br><strong>"Qualquer pessoa com o link → Leitor"</strong>.</div>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
