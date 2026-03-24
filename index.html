@@ -748,6 +748,63 @@ async function loadAnual(){
   }
 }
 
+// ── AUTO-SYNC CONTROLLER ──────────────────────────────────
+let syncIntervalId = null;
+let currentActiveTab = null;
+
+function startAutoSync() {
+  // Limpar interval anterior se existir
+  if (syncIntervalId) clearInterval(syncIntervalId);
+  
+  // Sincronizar a cada 5 minutos
+  syncIntervalId = setInterval(async () => {
+    if (currentActiveTab) {
+      console.log('🔄 Sincronizando dashboard...', new Date().toLocaleTimeString('pt-BR'));
+      try {
+        const freshData = await getRows(currentActiveTab.st);
+        renderMensal(freshData, currentActiveTab.l);
+        updateSyncBadge('synced');
+      } catch (e) {
+        console.error('Erro na sincronização:', e);
+        updateSyncBadge('error');
+      }
+    }
+  }, 5 * 60 * 1000); // 5 minutos em ms
+  
+  console.log('⏰ Auto-sync iniciado: a cada 5 minutos');
+}
+
+// Detecção: usuário volta para a janela do navegador
+document.addEventListener('visibilitychange', async () => {
+  if (!document.hidden && currentActiveTab) {
+    console.log('👁️ Página voltou ao foco → Sincronizando agora...');
+    try {
+      const freshData = await getRows(currentActiveTab.st);
+      renderMensal(freshData, currentActiveTab.l);
+      updateSyncBadge('synced');
+    } catch (e) {
+      console.error('Erro ao sincronizar no retorno:', e);
+      updateSyncBadge('error');
+    }
+  }
+});
+
+// Atualizar badge de sincronização
+function updateSyncBadge(status) {
+  const badge = document.querySelector('.live-badge');
+  const dot = document.querySelector('.live-dot');
+  
+  if (status === 'synced') {
+    dot.style.background = '#7cd67c';
+    dot.style.boxShadow = '0 0 6px #7cd67c';
+    badge.title = 'Sincronizado com Google Sheets';
+  } else if (status === 'error') {
+    dot.style.background = '#ff6b6b';
+    dot.style.boxShadow = '0 0 6px #ff6b6b';
+    badge.title = 'Erro ao sincronizar';
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────
 async function init(){
   try{
@@ -771,12 +828,20 @@ async function init(){
         document.querySelectorAll('.month-tab').forEach(b=>b.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById('dash').innerHTML='<div class="loading"><div class="spinner"></div> Carregando...</div>';
+        currentActiveTab = m;
         renderMensal(await getRows(m.st),m.l);
       });
       tabsEl.appendChild(btn);
     });
 
+    // Carregar dados iniciais
+    currentActiveTab = useTabs[0];
     renderMensal(await getRows(useTabs[0].st),useTabs[0].l);
+    
+    // Iniciar sincronização automática
+    startAutoSync();
+    
+    console.log('✅ Dashboard carregado com sincronização automática ativa');
   }catch(e){
     console.error(e);
     document.getElementById('dash').innerHTML=`<div class="err">Não foi possível acessar a planilha.<br><br>Verifique se o compartilhamento está em<br><strong>"Qualquer pessoa com o link → Leitor"</strong>.</div>`;
